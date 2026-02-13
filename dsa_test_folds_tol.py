@@ -36,7 +36,7 @@ for file in file_names.glob('*.txt'):
             train_image_names[fold_num] = formatted_filenames
         elif 'test' in file.name:
             test_image_names[fold_num] = formatted_filenames
-    test_mask_paths[fold_num] = [mask_dir / f for f in filenames]
+
 train_image_paths = {}
 for fold_num, filenames in train_image_names.items():
     train_image_paths[fold_num] = [image_dir / f for f in filenames]
@@ -166,7 +166,7 @@ class newcelldata(Dataset):
 
 
 transforms_tensor = transforms.ToTensor()
-save_dir = Path(f"/home/akaur101/data/f25/2d_rgc/dsa_results/fold_{fold}_tol_{tol}")
+save_dir = Path(f"/home/akaur101/data/f25/2d_rgc/dsa_results/validation_fold_{fold}_tol_{tol}")
 save_dir.mkdir(parents=True, exist_ok=True)
 
 
@@ -175,7 +175,7 @@ all_results = []
 print(f"Testing {len(val_images_padded)} images from fold {fold}")
 
 for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip(val_images_padded, val_masks_padded, gt_masks)):
-    print(f"\nProcessing image {img_idx + 1}/{len(test_images_padded)}")
+    print(f"\nProcessing image {img_idx + 1}/{len(val:_images_padded)}")
     
     num = 500
     centroid_df = pd.DataFrame()
@@ -213,21 +213,21 @@ for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip
         counter += 1
         print(f"Iteration {counter}, processing {len(next_S)} centroids")
         
-        test_image_list, test_mask_list, val_list, rows, cols = img_process(
-            next_S, test_image_padded, test_mask_padded)
+        val_image_list, val_mask_list, value_list, rows, cols = img_process(
+            next_S, val_image_padded, val_mask_padded)
         
-        test_dataset = newcelldata(
-            image_list=test_image_list,
-            mask_list=test_mask_list,
+        val_dataset = newcelldata(
+            image_list=val_image_list,
+            mask_list=val_mask_list,
             rows=rows,
             cols=cols,
             transforms=transforms_tensor)
         
-        test_loader = DataLoader(test_dataset, 50, shuffle=False)
+        val_loader = DataLoader(val_dataset, 50, shuffle=False)
         
        
         with torch.no_grad():
-            for k, data in enumerate(test_loader):
+            for k, data in enumerate(val_loader):
                 images, masks, rows, cols = data
                 images = images.to(device=device)
                 masks = masks.to(device=device)
@@ -256,8 +256,8 @@ for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip
                     
                     boundary_size = 40
         
-                    if boundary_size <= x < test_image_padded.shape[0] - boundary_size and \
-                       boundary_size <= y < test_image_padded.shape[1] - boundary_size:
+                    if boundary_size <= x < val_image_padded.shape[0] - boundary_size and \
+                       boundary_size <= y < val_image_padded.shape[1] - boundary_size:
                         val = torch.squeeze(final_pred[current])[pred_ind_row, pred_ind_col]
                         temp_ind_list.append([x, y])
                         temp_val_list.append(val)
@@ -274,7 +274,7 @@ for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip
                         runn_cent.append(i)
                 
         
-        temp_snapshot_mask = np.zeros_like(test_mask_padded)
+        temp_snapshot_mask = np.zeros_like(val_mask_padded)
         for idx in runn_cent:
             temp_snapshot_mask[idx[0], idx[1]] = 1
 
