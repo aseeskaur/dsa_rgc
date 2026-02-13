@@ -18,6 +18,7 @@ file_names = Path("/home/akaur101/data/cross_validation/file_names_per_fold")
 image_dir = Path(sys.argv[1])
 mask_dir = Path(sys.argv[2])
 fold = int(sys.argv[3])
+tol = float(sys.argv[4])
 
 train_image_names = {}
 test_image_names = {}
@@ -35,14 +36,14 @@ for file in file_names.glob('*.txt'):
             train_image_names[fold_num] = formatted_filenames
         elif 'test' in file.name:
             test_image_names[fold_num] = formatted_filenames
-
-test_image_paths = {}
-for fold_num, filenames in test_image_names.items():
-    test_image_paths[fold_num] = [image_dir / f for f in filenames]
-
-test_mask_paths = {}
-for fold_num, filenames in test_image_names.items():
     test_mask_paths[fold_num] = [mask_dir / f for f in filenames]
+train_image_paths = {}
+for fold_num, filenames in train_image_names.items():
+    train_image_paths[fold_num] = [image_dir / f for f in filenames]
+
+train_mask_paths = {}
+for fold_num, filenames in train_image_names.items():
+    train_mask_paths[fold_num] = [mask_dir / f for f in filenames]
 
 train_images = train_image_paths[fold]
 train_masks = train_mask_paths[fold]
@@ -223,7 +224,7 @@ for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip
             transforms=transforms_tensor)
         
         test_loader = DataLoader(test_dataset, 50, shuffle=False)
-        tol = float(sys.argv[4])
+        
        
         with torch.no_grad():
             for k, data in enumerate(test_loader):
@@ -290,11 +291,11 @@ for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip
     
     print(f"Completed after {counter} iterations")
 
-    image_name = test_images[img_idx].stem
+    image_name = val_images[img_idx].stem
 
     
     # Reconstruct mask
-    recon_mask = np.zeros_like(test_mask_padded)
+    recon_mask = np.zeros_like(val_mask_padded)
     flat_list_ind = [item for sublist in all_indices for item in sublist]
     flat_list_pred = [item for sublist in all_pred for item in sublist]
     
@@ -334,11 +335,12 @@ for img_idx, (val_image_padded, val_mask_padded, original_mask) in enumerate(zip
 
     plt.imshow(new_recon_mask, cmap="gray")
     plt.savefig(save_dir / f"{image_name}_results.png", bbox_inches='tight')
+    plt.close()
     
     
     
     print(f"Image {image_name}: Detected {len(flat_list_ind)} cells in {counter} iterations")
 
-print(f"\nCompleted testing all {len(test_images_padded)} images")
+print(f"\nCompleted testing all {len(val_images_padded)} images")
 print(f"Results saved to: {save_dir}")
 
