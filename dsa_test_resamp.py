@@ -6,6 +6,7 @@ import torch
 import random
 import pandas as pd
 import os
+import time 
 
 from pathlib import Path
 from sklearn.model_selection import train_test_split
@@ -13,6 +14,11 @@ from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
 
+random.seed(42)
+np.random.seed(42)
+torch.manual_seed(42)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(42)
 
 file_names = Path("/home/akaur101/data/cross_validation/file_names_per_fold")
 image_dir = Path(sys.argv[1])
@@ -167,7 +173,10 @@ all_results = []
 
 print(f"Testing {len(test_images_padded)} images from fold {fold}")
 
+fold_start = time.time()
+
 for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(zip(test_images_padded, test_masks_padded, gt_masks)):
+    img_start = time.time()
     print(f"\nProcessing image {img_idx + 1}/{len(test_images_padded)}")
     
     num = 500
@@ -328,10 +337,12 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
     plt.imshow(new_recon_mask, cmap="gray")
     plt.savefig(save_dir / f"{image_name}_results.png", bbox_inches='tight')
     
-    
-    
     print(f"Image {image_name}: Detected {len(flat_list_ind)} cells in {counter} iterations")
+    img_time = time.time() - img_start
+    print(f"Image {image_name} took {img_time:.2f} seconds")
 
+fold_time = time.time() - fold_start
+print(f"\nTotal time for fold {fold}: {fold_time:.2f} seconds")
 print(f"\nCompleted testing all {len(test_images_padded)} images")
 print(f"Results saved to: {save_dir}")
 
