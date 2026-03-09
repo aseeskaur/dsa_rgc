@@ -173,6 +173,8 @@ all_results = []
 
 print(f"Testing {len(test_images_padded)} images from fold {fold}")
 
+time_records = []
+
 fold_start = time.time()
 
 for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(zip(test_images_padded, test_masks_padded, gt_masks)):
@@ -336,6 +338,11 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
         save_dir / f"{image_name}_snapshot_iterations.npy",
         np.array(saved_iterations)
     )
+
+    np.save(
+    save_dir / f"{image_name}_avg_confidence.npy",
+    recon_mask_avg[40:-40, 40:-40]
+    )
     print(f"Saved {len(saved_masks)} iteration snapshots")
 
     plt.imshow(new_recon_mask, cmap="gray")
@@ -344,8 +351,20 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
     print(f"Image {image_name}: Detected {len(flat_list_ind)} cells in {counter} iterations")
     img_time = time.time() - img_start
     print(f"Image {image_name} took {img_time:.2f} seconds")
+    time_records.append({
+    'image_name': image_name,
+    'time_seconds': img_time,
+    'num_iterations': counter,
+    'num_detected': len(flat_list_ind)
+    })
+
+
 
 fold_time = time.time() - fold_start
+time_df = pd.DataFrame(time_records)
+time_df['fold'] = fold
+time_df['total_fold_time'] = fold_time
+time_df.to_csv(save_dir / f"timing_record_fold_{fold}.csv", index=False)
 print(f"\nTotal time for fold {fold}: {fold_time:.2f} seconds")
 print(f"\nCompleted testing all {len(test_images_padded)} images")
 print(f"Results saved to: {save_dir}")
