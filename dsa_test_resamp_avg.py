@@ -24,7 +24,7 @@ file_names = Path("/home/akaur101/data/cross_validation/file_names_per_fold")
 image_dir = Path(sys.argv[1])
 mask_dir = Path(sys.argv[2])
 fold = int(sys.argv[3])
-tol = 0.6
+tol = 0.8
 
 train_image_names = {}
 test_image_names = {}
@@ -165,7 +165,7 @@ class newcelldata(Dataset):
 
 
 transforms_tensor = transforms.ToTensor()
-save_dir = Path(f"/home/akaur101/data/sp26/rgc/dsa_results/test_aug_resamp_avg_fold_{fold}")
+save_dir = Path(f"/home/akaur101/data/sp26/rgc/dsa_results/test_aug_resamp_avg_fold_{fold}_tol_{tol}")
 save_dir.mkdir(parents=True, exist_ok=True)
 
 
@@ -340,8 +340,8 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
     )
 
     np.save(
-    save_dir / f"{image_name}_avg_confidence.npy",
-    recon_mask_avg[40:-40, 40:-40]
+        save_dir / f"{image_name}_avg_confidence.npy",
+        recon_mask_avg[40:-40, 40:-40]
     )
     print(f"Saved {len(saved_masks)} iteration snapshots")
 
@@ -352,10 +352,10 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
     img_time = time.time() - img_start
     print(f"Image {image_name} took {img_time:.2f} seconds")
     time_records.append({
-    'image_name': image_name,
-    'time_seconds': img_time,
-    'num_iterations': counter,
-    'num_detected': len(flat_list_ind)
+        'image_name': image_name,
+        'time_seconds': img_time,
+        'num_iterations': counter,
+        'num_detected': len(flat_list_ind)
     })
 
 

@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=dsa_resamp_test
+#SBATCH --job-name=dsa_resamp_avg_test
 #SBATCH --partition dept.appliedmath
-#SBATCH --output=/home/akaur101/data/sp26/rgc/outputs/fold_time_test_rgc_resamp%j.stdout
+#SBATCH --output=/home/akaur101/data/sp26/rgc/outputs/rgc_test_resamp_avg%j.stdout
 
 #SBATCH --gres=gpu:1
 #SBATCH --time=5:00:00
@@ -15,6 +15,6 @@
 
 module load anaconda3
 source activate env_pytorch
-python /home/akaur101/data/sp26/rgc/dsa_test_resamp.py  /home/akaur101/data/dsa_images/raw  /home/akaur101/data/dsa_images/gt $1
+python /home/akaur101/data/sp26/rgc/dsa_test_resamp_avg.py  /home/akaur101/data/dsa_images/raw  /home/akaur101/data/dsa_images/gt $1
 
 
