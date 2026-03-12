@@ -228,7 +228,9 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
             transforms=transforms_tensor)
         
         test_loader = DataLoader(test_dataset, 50, shuffle=False)
-       
+        iter_ind_list = []
+        iter_val_list = []
+
         with torch.no_grad():
             for k, data in enumerate(test_loader):
                 images, masks, rows, cols = data
@@ -266,36 +268,37 @@ for img_idx, (test_image_padded, test_mask_padded, original_mask) in enumerate(z
                         temp_val_list.append(val)
                     else:
                         continue
-                        
+
+                iter_ind_list.extend(temp_ind_list)
+                iter_val_list.extend(temp_val_list)
                 all_indices.append(temp_ind_list)
                 all_pred.append(temp_val_list)
 
                 
             
-                iter_mask_sum   = np.zeros_like(test_mask_padded, dtype=float)
-                iter_mask_count = np.zeros_like(test_mask_padded, dtype=float)
+            iter_mask_sum   = np.zeros_like(test_mask_padded, dtype=float)
+            iter_mask_count = np.zeros_like(test_mask_padded, dtype=float)
 
-                for idx, val in zip(temp_ind_list, temp_val_list):
-                    x, y = idx[0], idx[1]
-                    val = val.cpu().item() if torch.is_tensor(val) else val
-                    iter_mask_sum[x, y]   += val
-                    iter_mask_count[x, y] += 1
+            for idx, val in zip(temp_ind_list, temp_val_list):
+                 x, y = idx[0], idx[1]
+                 val = val.cpu().item() if torch.is_tensor(val) else val
+                 iter_mask_sum[x, y]   += val
+                 iter_mask_count[x, y] += 1
 
-                iter_mask_avg = np.divide(iter_mask_sum, iter_mask_count, where=iter_mask_count > 0)
-                new_foreground = np.argwhere(iter_mask_avg > tol)
+            iter_mask_avg = np.divide(iter_mask_sum, iter_mask_count, where=iter_mask_count > 0)
+            new_foreground = np.argwhere(iter_mask_avg > tol)
 
-                for idx in new_foreground:
-                    if idx.tolist() not in runn_cent:
-                        runn_cent.append(idx.tolist())
+            for idx in new_foreground:
+                if idx.tolist() not in runn_cent:
+                    runn_cent.append(idx.tolist())
                 
         
-        temp_snapshot_mask = np.zeros_like(test_mask_padded)
-        for idx in runn_cent:
-            temp_snapshot_mask[idx[0], idx[1]] = 1
+            temp_snapshot_mask = np.zeros_like(test_mask_padded)
+            for idx in runn_cent:
+                temp_snapshot_mask[idx[0], idx[1]] = 1
 
-
-        saved_masks.append(temp_snapshot_mask[40:-40, 40:-40].copy())
-        saved_iterations.append(counter)
+            saved_masks.append(temp_snapshot_mask[40:-40, 40:-40].copy())
+            saved_iterations.append(counter)
 
         # Prepare next iteration
         next_S = []
